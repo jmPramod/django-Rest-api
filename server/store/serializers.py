@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import ProductModel, CategoryModel,CartItemModels,CartModel
-
+from django.contrib.auth.models import User
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,9 +25,43 @@ class CartItemSerializer(serializers.ModelSerializer):
         fields='__all__'
         
 class CartSerializer(serializers.ModelSerializer):
-    items=CartItemSerializer(many=True,read_only=True) 
-    total=serializers.ReadOnlyField()
+    items = CartItemSerializer(many=True, read_only=True)
+    total = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CartModel
+        fields = ['id', 'items', 'total', 'created_at', 'users']
+
+    def get_total(self, obj):
+        return sum(
+            item.quantity * item.product.price
+            for item in obj.items.all()
+        )
+        
+        
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=User  
+        fields=['id','username','email']      
+        
+        
+        
+class RegisteredSerializer(serializers.ModelSerializer):
+    password=serializers.CharField(write_only=True)
+    password2=serializers.CharField(write_only=True)        
     
     class Meta:
-        model=CartModel
-        fields='__all__'
+        model=User  
+        fields=['password','password2','username','email']      
+        
+    def validate(self, data):
+        if data['password']!=data['password2']:
+            raise serializers.ValidationError("Password do not match ")
+        return data 
+    
+    def create(self, validated_data): #serializer
+        username=validated_data['username']
+        email=validated_data['email']
+        password=validated_data['password']
+        user=User.objects.create_user(username=username,email=email,password=password)
+        return user

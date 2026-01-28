@@ -34,14 +34,16 @@ class UserProfileModel(models.Model):
     
     
 class OrderModel(models.Model):
-    user= models.ForeignKey(User,on_delete=models.CASCADE)
+    user= models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     total_amount=models.DecimalField(max_digits=10,decimal_places=2)   
     
     def __str__(self):
-        return f"Order {self.id} by {self.user.username}"
-    
-class OrderItem(models.Model):
+     if self.user:
+         return f"Order {self.id} by {self.user.username}"
+     return f"Order {self.id} (Guest)"
+
+class OrderItemModels(models.Model):
     order=models.ForeignKey(OrderModel,related_name='item',on_delete=models.CASCADE)
     product=models.ForeignKey(ProductModel,on_delete=models.CASCADE)
     quantity=models.PositiveIntegerField(default=1)
