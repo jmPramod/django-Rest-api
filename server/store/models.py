@@ -56,7 +56,7 @@ class OrderItemModels(models.Model):
 
 
 class CartModel(models.Model):
-    users=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
+    user=models.ForeignKey(User,on_delete=models.CASCADE,null=True,blank=True)
     created_at=models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
